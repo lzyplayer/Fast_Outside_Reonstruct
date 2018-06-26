@@ -30,11 +30,39 @@ hold on;
 pcshow(pctransform(clouds{d},affine3d(motion')));
 
 %展示路径图
- plot(globalCameraPosition(:,1),globalCameraPosition(:,2),'-*');
+ plot(globalCameraPosition(:,1),globalCameraPosition(:,2),'r-*');
 xlabel('x');
 ylabel('y');
 % zlabel('z');
 axis([-0.2 0.2 -0.2 0.2 ]);
+
+newposition=[];
+for p=1:30
+    newposition=[newposition; MotionGlobal{p}(1:3,4)'];
+end
+
+
+
+%% 某两帧eig匹配
+tic
+ModelCloud=clouds{1};
+DataCloud=clouds{28};
+gridStep=0.03;
+overlap=0.35;
+res=10;
+[tarDesp,tarSeed,tarNorm] = extractEig(ModelCloud,gridStep); 
+[srcDesp,srcSeed,srcNorm] = extractEig(DataCloud,gridStep);
+T = eigMatch(tarDesp,srcDesp,tarSeed,srcSeed,tarNorm,srcNorm,overlap,gridStep);
+T = inv(T);
+R0= T(1:3,1:3);
+t0= T(1:3,4);
+Model= ModelCloud.Location(1:res:end,:)';
+Data= DataCloud.Location(1:res:end,:)';
+[MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap);
+Motion=Rt2M(R,t);
+Motion(1:3,4)=Motion(1:3,4);
+toc
+
 
 %展示某帧和第一帧配准
 close all;
@@ -46,10 +74,10 @@ pcshow(pctransform(clouds{1},affine3d( MotionGlobal{tar}')));
 
 %% 某帧真值比对 
 load outside_GRT;
-tar =12;
-src=tar-1;
+tar =28;
+src=1;
 realMotion=GrtM{src}\GrtM{tar};   % inv(GrtM{src})*GrtM{tar}
-norm(realMotion(1:3,1:3)-relativeMotion{tar}(1:3,1:3),'fro')
-norm(realMotion(1:3,4)-relativeMotion{tar}(1:3,4).*30,2)
+norm(realMotion(1:3,1:3)-motionInfo{1,1}(1:3,1:3),'fro')
+norm(realMotion(1:3,4)-motionInfo{1,1}(1:3,4).*30,2)
 
 

@@ -7,7 +7,7 @@ function [ motionInfo ] = fastDesEigMatch( clouds, cameraPair,overlap,gridStep,r
 eigMSEs=[];
 requiredCloudList=unique(cameraPair(:,1:2));
 for i=1:length(requiredCloudList)
-    [srcDesp{requiredCloudList(i)},srcSeed{requiredCloudList(i)},srcNorm{requiredCloudList(i)}] = extractEig(clouds{i},gridStep);
+    [srcDesp{requiredCloudList(i)},srcSeed{requiredCloudList(i)},srcNorm{requiredCloudList(i)}] = extractEig(clouds{requiredCloudList(i)},gridStep);
 end
 pairNum=size(cameraPair,1);
 for i=1:pairNum
@@ -19,7 +19,7 @@ for i=1:pairNum
     T = inv(T); %为了提高运行效率，所以换过来算
     R0= T(1:3,1:3);
     t0= T(1:3,4);
-    [MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap); %这个操作特别费时间
+    [MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap); 
     %     num= num+1
     if (MSE > 2.0*mean(eigMSEs))
         continue;

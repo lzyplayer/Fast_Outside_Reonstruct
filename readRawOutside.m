@@ -3,7 +3,7 @@ function [clouds ] = readRawOutside( filepath,filePrefix,scannum ,s )
 %   此处显示详细说明
     count=scannum-1; %从0开始
 %% 读取点云
-    clouds=readCloudCsv(filepath,filePrefix,count,0.02,s); %去除地面点
+    clouds=readCloudCsv(filepath,filePrefix,count,0.01,s); %去除地面点
 %     count=count+1；
 % transmatrix=[-1 0 0 0
 %              0 0 -1 0
