@@ -3,7 +3,9 @@ clc;clear;close all;
 
 addpath('./flann/');
 addpath('./estimateRigidTransform');
-gridStep = 0.01;
+icpGridStep = 0.01;
+eigDGridStep = 0.04;
+eigLoGridStep=0.03;
 filepath='./data/local_frame/';
 filePrefix='Hokuyo_';
 readnum=31;
@@ -11,7 +13,7 @@ readnum=31;
 overlap = 0.35;
 icpToler=2e-05;
 ICPthreashold=50;
-res= 1;
+res= 10;
 s=30;
 % [clouds,Desp,Seed,Norm] = readRoom(data,gridStep);
 % [clouds] = readRawOutside(filepath,filePrefix,readnum,s);
@@ -20,28 +22,39 @@ load trimOutside.mat
 tic;
 N = length(clouds);
 MotionGlobal{1}=eye(4);
-dowmSampleClouds{1}=pcdownsample(pcdenoise(clouds{1}),'gridAverage',gridStep);
+dowmSampleClouds{1}=pcdownsample(pcdenoise(clouds{1}),'gridAverage',icpGridStep);
 % ns{1}=createns(dowmSampleClouds{1}.Location,'nsmethod','kdtree');
 globalCameraPosition=[0,0,0];
 relativeMotion{1}=eye(4);
-%%　主循环
+LoopDectNum=ceil(N/2);
+cameraPosePair=[];
+LoopFlag=0;
+%% 　主循环
 for i=2:N
-    dowmSampleClouds{i}=pcdownsample(pcdenoise(clouds{i}),'gridAverage',gridStep);
+    dowmSampleClouds{i}=pcdownsample(pcdenoise(clouds{i}),'gridAverage',icpGridStep);
 %     [currMotion2next]=pcregrigid(dowmSampleClouds{i-1},dowmSampleClouds{i},'Tolerance',[0.01/s,0.009]);
     ns{i-1}=createns(dowmSampleClouds{i-1}.Location,'nsmethod','kdtree');
     IcpModel=[dowmSampleClouds{i-1}.Location';ones(1,dowmSampleClouds{i-1}.Count)];
     IcpData=[dowmSampleClouds{i}.Location';ones(1,dowmSampleClouds{i}.Count)];
     [relativeMotion{i},MSE(i,1)]=myTrimICP(ns{i-1},IcpModel,IcpData,relativeMotion{i-1},ICPthreashold,overlap);
-    fixTimes=0; enhanceModelCloud=dowmSampleClouds{i-1};
-    while(MSE(i,1)>icpToler && fixTimes<1)   %单帧配准误差过大,丰富模型点云以修正
-        enhanceModelCloud=pcmerge(enhanceModelCloud,pctransform( dowmSampleClouds{i-2-fixTimes},affine3d(inv(relativeMotion{i-1})')),gridStep);
-        IcpModel=[enhanceModelCloud.Location';ones(1,enhanceModelCloud.Count)];
-        nsEnhanced=createns(enhanceModelCloud.Location,'nsmethod','kdtree');
-        [relativeMotion{i},MSE(i,1)]=myTrimICP(nsEnhanced,IcpModel,IcpData,relativeMotion{i-1},ICPthreashold,overlap);
-        fixTimes=fixTimes+1;
+%     fixTimes=0; enhanceModelCloud=dowmSampleClouds{i-1};
+    if(MSE(i,1)>icpToler )   %单帧配准误差过大,
+          [relativeMotion{i}, MSE(i,1)]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res);
     end
     MotionGlobal{i}=MotionGlobal{i-1}*relativeMotion{i};
     globalCameraPosition(i,:)=MotionGlobal{i}(1:3,4)';
+    %% 回环检测开始
+    LoopPairNum=size(cameraPosePair,1);
+    if(size(globalCameraPosition,1)>LoopDectNum)
+        cameraPosePair=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum);
+        
+    end
+    %% 回环结束_特征点匹配_匹配对扩展
+    if((LoopPairNum==size(cameraPosePair,1)&& size(cameraPosePair,1)>0  && LoopFlag==0)||(LoopFlag==0 && i==N ))
+%         accMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigLoGridStep,res);
+        LoopFlag=1;
+    end
+        
 end
 toc
 % N = length(clouds);

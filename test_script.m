@@ -34,7 +34,7 @@ pcshow(pctransform(clouds{d},affine3d(motion')));
 xlabel('x');
 ylabel('y');
 % zlabel('z');
-axis([-0.5 0.5 -0.5 0.5 ]);
+axis([-0.2 0.2 -0.2 0.2 ]);
 
 %展示某帧和第一帧配准
 close all;
@@ -44,4 +44,12 @@ hold on;
 pcshow(pctransform(clouds{1},affine3d( MotionGlobal{tar}')));
 
 
-% 
+%% 某帧真值比对 
+load outside_GRT;
+tar =12;
+src=tar-1;
+realMotion=GrtM{src}\GrtM{tar};   % inv(GrtM{src})*GrtM{tar}
+norm(realMotion(1:3,1:3)-relativeMotion{tar}(1:3,1:3),'fro')
+norm(realMotion(1:3,4)-relativeMotion{tar}(1:3,4).*30,2)
+
+
