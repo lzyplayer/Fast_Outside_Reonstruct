@@ -22,7 +22,7 @@ MotionGlobal{1}=eye(4);
 dowmSampleClouds{1}=pcdownsample(pcdenoise(clouds{1}),'gridAverage',icpGridStep);
 globalCameraPosition=[0,0,0];
 relativeMotion{1}=eye(4);
-LoopDectNum=ceil(N/2);
+LoopDectNum=floor(N/4);
 cameraPosePair=[];
 LoopFlag=0;
 ns={};
@@ -44,18 +44,17 @@ for i=2:N
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
     if(size(globalCameraPosition,1)>LoopDectNum)
-        cameraPosePair=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum);
-        
+        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag);
     end
     %% 回环结束_特征点匹配_匹配对扩展
-    if((LoopPairNum==size(cameraPosePair,1)&& size(cameraPosePair,1)>0  && LoopFlag==0)||(LoopFlag==0 && i==N ))
+    if((LoopPairNum==size(cameraPosePair,1) || i==N) && (LoopFlag==1 ))
         accMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigDGridStep,res);
         D=gen_Dij(accMotion,i);
         updatedGlobalMotion=MotionAverage(accMotion,MotionGlobal,D,size(accMotion,1),i);
         for k=1:length(updatedGlobalMotion)
             MotionGlobal{k}=updatedGlobalMotion{k};
         end
-        LoopFlag=1;
+        LoopFlag=0;
     end
         
 end

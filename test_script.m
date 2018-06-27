@@ -1,4 +1,4 @@
-gridstep=0.01;
+% gridstep=0.01;
 % readnum=31;
 % overlap = 0.4;
 % res= 1;
@@ -29,17 +29,30 @@ pcshow(clouds{m});
 hold on;
 pcshow(pctransform(clouds{d},affine3d(motion')));
 
-%展示路径图
- plot(globalCameraPosition(:,1),globalCameraPosition(:,2),'r-*');
+%% 全局方向展现，和路径结合用
+% ori=[0 0 0 ;100 100 100 ];%全局观测方向
+ori=[0 0 0 ;0.01 0.01 0.01 ];
+
+for i=1:length(MotionGlobal)
+    currOri=MotionGlobal{i}*[ori';ones(1,size(ori,1))];
+    eachOri{i}=currOri(1:3,:)';
+    plot3(eachOri{i}(:,1),eachOri{i}(:,2),eachOri{i}(:,3),'r-o')
+    hold on
+end
+
+%% 展示路径图
+
+route=[];
+for p=1:length(MotionGlobal)
+    route=[route; MotionGlobal{p}(1:3,4)'];
+end
+plot3(route(:,1),route(:,2),route(:,3),'-*');
 xlabel('x');
 ylabel('y');
-% zlabel('z');
-axis([-0.2 0.2 -0.2 0.2 ]);
+zlabel('z');
+% axis([-3000 3000 -3000 3000 -3000 3000 ]);
+axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
 
-newposition=[];
-for p=1:30
-    newposition=[newposition; MotionGlobal{p}(1:3,4)'];
-end
 
 
 
