@@ -3,21 +3,25 @@ clc;clear;close all;
 
 addpath('./flann/');
 addpath('./estimateRigidTransform');
-icpGridStep = 0.01;
+icpGridStep = 0.04;
 eigDGridStep = 0.04;
 % eigLoGridStep=0.03;
-filepath='./data/local_frame/';
-filePrefix='Hokuyo_';
-readnum=31;
+% filepath='./data/local_frame/';
+% filePrefix='Hokuyo_';
+readnum=64;
 % scannum=length(dir(datapath))-2;
-overlap = 0.35;
+overlap = 0.4;
 icpToler=2e-05;
-ICPthreashold=50;
-res= 10;
-s=30;
-load trimOutside.mat
+ICPthreashold=100;
+res= 1;
+s=4000;
+load Osnabr_Data.mat;
 tic;
 N = length(clouds);
+for q=1:N
+    clouds{q}=pointCloud(clouds{q}.Location./s);
+end
+
 MotionGlobal{1}=eye(4);
 dowmSampleClouds{1}=pcdownsample(pcdenoise(clouds{1}),'gridAverage',icpGridStep);
 globalCameraPosition=[0,0,0];
@@ -28,7 +32,7 @@ LoopFlag=0;
 ns={};
 %% 　主循环
 for i=2:N
-%   [relativeMotion,MSE]=forwardICP(ns,i,dowmSampleClouds,clouds,ICPthreashold,overlap);
+    %   [relativeMotion,MSE]=forwardICP(ns,i,dowmSampleClouds,clouds,ICPthreashold,overlap);
     dowmSampleClouds{i}=pcdownsample(pcdenoise(clouds{i}),'gridAverage',icpGridStep);
     [currMotion2next]=pcregrigid(dowmSampleClouds{i-1},dowmSampleClouds{i},'Tolerance',[0.01/s,0.009]);
     ns{i-1}=createns(dowmSampleClouds{i-1}.Location,'nsmethod','kdtree');
@@ -37,7 +41,7 @@ for i=2:N
     [relativeMotion{i},MSE(i,1)]=myTrimICP(ns{i-1},IcpModel,IcpData,relativeMotion{i-1},ICPthreashold,overlap);
     fixTimes=0; enhanceModelCloud=dowmSampleClouds{i-1};
     if(MSE(i,1)>icpToler )   %单帧配准误差过大,
-          [relativeMotion{i}, MSE(i,1)]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res);
+        [relativeMotion{i}, MSE(i,1)]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res);
     end
     MotionGlobal{i}=MotionGlobal{i-1}*relativeMotion{i};
     globalCameraPosition(i,:)=MotionGlobal{i}(1:3,4)';
@@ -56,13 +60,10 @@ for i=2:N
         end
         LoopFlag=0;
     end
-        
+    
 end
 toc
 
 % [clouds] = readRawOutside(filepath,filePrefix,readnum,s);
 obtainResult(clouds,MotionGlobal);
-figure;
-plot(globalCameraPosition(:,1),globalCameraPosition(:,2),'-*');
-xlabel('x');
-ylabel('y');
+

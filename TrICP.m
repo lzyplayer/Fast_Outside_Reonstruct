@@ -28,7 +28,7 @@ while ((CurrStep <MoveStep)&(abs(PminPhi-minPhi)>10^(-6)))
     % Sort the corresponding points
     corrTD = [corr, TD];
     SortCorrTD = sortrows(corrTD, 3);
-    [R, t, TCorr, TData] = CalRtPhi(TData, SortCorrTD, TriKSI, Model, Data); 
+    [R, t, TCorr, TData] = CalRtPhi(TData, SortCorrTD, TriKSI, Model, Data);
 end
 
 

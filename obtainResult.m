@@ -3,7 +3,8 @@ function [ ] = obtainResult( clouds , motion)
 %   此处显示详细说明
 
 figure;
-for i=1:length(clouds)
+% for i=1:length(clouds)
+for i=1:12
     pcshow(pctransform(clouds{i},affine3d(motion{i}')));
     hold on;
 end

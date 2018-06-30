@@ -13,6 +13,22 @@ for k=0:lastnum
     end
     prefix=[ordernum '.3d'];
     %∂¡»°.3d
+    scan{k+1}=load([filepathWp prefix]);
+     disp(['scan ' num2str(k) ' loaded']);
+
+    %∂¡»°.pose
+        prefix=[ordernum '.pose'];
+        scanpose{k+1}=load([filepathWp prefix]);
+        R=OulerToRota(scanpose{k+1}(2,:));
+        T=scanpose{k+1}(1,:)';
+        Grt{k+1}=[R,T;0 0 0 1];
+        route=[route ; T'];
+end
+
+
+
+
+
 %     fidin = fopen([filepathWp prefix],'r');
 %     nline = 0;
 %     currscan=zeros(81360,4);
@@ -23,19 +39,8 @@ for k=0:lastnum
 %         currscan(nline-1,:) = str2num(tline);
 %         end
 %     end
-%     disp(['scan ' num2str(k) ' loaded']);
+%       fclose(fidin);
 %     scan{k+1}=currscan;
-    %∂¡»°.pose
-        prefix=[ordernum '.pose'];
-        scanpose{k+1}=load([filepathWp prefix]);
-        R=OulerToRota(scanpose{k+1}(2,:));
-        T=scanpose{k+1}(1,:)';
-        MotionGlobal{k+1}=[R,T;0 0 0 1];
-        route=[route ; T'];
-end
-
-
-
 
 
 

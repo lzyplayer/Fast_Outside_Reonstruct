@@ -42,13 +42,14 @@ for i=1:length(clouds)
     hold on;
 end
 
-for i=1:length(clouds)
+for i=1:2
 %     curMotion=p(i).M;
 %     curMotion(1:3,4)=curMotion(1:3,4)./s;
-    pcshow(pcdenoise(colorful_clouds{i}));
+    pcshow(pcdenoise(clouds{2}));
     hold on;
 end
-
+  pcshow(pcdenoise(pctransform(  clouds{2}, affine3d(Motion'))));
+  hold on;
 
 
 %% Ωµ‘Î
