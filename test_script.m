@@ -101,3 +101,9 @@ pcshow(pctransform(clouds{tar},affine3d( Motion')));
 % norm(realMotion(1:3,4)-motionInfo{1,1}(1:3,4).*30,2)
 % 
 % 
+
+%% test CEll_fun
+fixMotion=cellfun(@(x) {relativeMotion{x},x-1,x} , {2,3},'UniformOutput',false )
+cellfun(@(x) {relativeMotion{x},x-1,x} , fixedPointCloudN,'UniformOutput',false );
+cell2mat(fixMotion)
+[accMotion;fixMotion{1}]

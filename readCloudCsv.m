@@ -1,6 +1,6 @@
 function [ pointClouds ] = readCloudCsv(filepath,filePrefix,readnum ,zlimit,s )
 %REACLOUDCSV 此处显示有关此函数的摘要
-%   此处显示详细说明
+%   此处显示详细说明 
 if(readnum>30) 
     error('OutOfRange!');
 end
@@ -11,13 +11,12 @@ for i=0:readnum
     cloud = importdata(filename);
 
     % Extract coordinates
-%     x = cloud.data(:, strcmp('x', cloud.colheaders));
-%     y = cloud.data(:, strcmp('y', cloud.colheaders));
-%     z = cloud.data(:, strcmp('z', cloud.colheaders));
-    %更换为快捷但不健壮的表达 Extract coordinates
+    x = strcmp('x', cloud.colheaders);
+    y = strcmp('y', cloud.colheaders);
+    z = strcmp('z', cloud.colheaders);
     
-    pointGroud= cloud.data(:,4)<zlimit*s ;% 会拍到机器人自身的部分形成大干扰
-    pointrobat= cloud.data(:,4)>zlimit*s & cloud.data(:,4)<0.023*s & cloud.data(:,2)<0.06*s & cloud.data(:,3)<0.025*s & cloud.data(:,3)>-0.025*s;
+    pointGroud= cloud.data(:,z)<zlimit ;% 会拍到机器人自身的部分形成大干扰
+    pointrobat= cloud.data(:,z)>zlimit & cloud.data(:,z)<0.023*30 & cloud.data(:,x)<0.06*30 & cloud.data(:,y)<0.025*30 & cloud.data(:,y)>-0.025*30;
     pointBad=pointGroud | pointrobat;
     pointSelect=~pointBad;
     
