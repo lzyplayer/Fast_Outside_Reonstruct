@@ -1,6 +1,5 @@
 *.mat
 *.asv
 /data
-/estimateRigidTransform
-/flann
-/3DV2014
+!outside_ori.mat
+!outside_GRT.mat
