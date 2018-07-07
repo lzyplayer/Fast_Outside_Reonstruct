@@ -1,3 +1,16 @@
+figure;
+low=4;
+high=102;
+pairnum=15;
+pcshow(clouds{low});hold on;
+pcshow(pctransform(clouds{high},affine3d(accMotion{pairnum}')));%accMotion{pairnum}'
+
+
+figure;
+pcshow(clouds{10});
+figure;
+pcshow(clouds{120});
+
 % % gridstep=0.01;
 % % readnum=31;
 % % overlap = 0.4;
@@ -61,12 +74,12 @@ axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
 
 
 %% Ä³Á½Ö¡eigÆ¥Åä
-s=4000;
+s=1;
 % ModelCloud=clouds{1};
 % DataCloud=clouds{2};
-ModelCloud=pointCloud(clouds{2}.Location./s);
-DataCloud=pointCloud(clouds{3}.Location./s);
-gridStep=0.01;
+ModelCloud=pointCloud(clouds{1}.Location);
+DataCloud=pointCloud(clouds{96}.Location);
+gridStep=30;
 overlap=0.4;
 res=1;
 [tarDesp,tarSeed,tarNorm] = extractEig(ModelCloud,gridStep); 

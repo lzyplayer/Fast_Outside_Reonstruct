@@ -2,13 +2,13 @@ function [iMSEi, R, t, TData, TCorr, Dthr] = TrICP(Model, Data, R, t, MoveStep, 
 
 
 TrMax= 1.0;
-% Data for two 3D data sets 
+% Data for two 3D data sets
 minPhi= 10^(5);
 PminPhi= 10^(6);
 CurrStep = 0;
 TData = transform_to_global(Data, R, t);
 NS = createns(Model');
-while ((CurrStep <MoveStep)&(abs(PminPhi-minPhi)>10^(-6)))
+while ((CurrStep <MoveStep) &(abs(PminPhi-minPhi)>10^(-6)))
     CurrStep= CurrStep+1;
     [corr,TD] = knnsearch(NS,TData');
     SortTD2 = sortrows(TD.^2); % Sort the correspongding points
@@ -18,17 +18,21 @@ while ((CurrStep <MoveStep)&(abs(PminPhi-minPhi)>10^(-6)))
     mTr = TDIndex./length(TD);
     mCumTD2 = cumsum(SortTD2); % Get accumulative sum of sorted TD.^2
     mMSE = mCumTD2(minTDIndex : maxTDIndex)./TDIndex; % Compute all MSE
-    mPhi = ObjectiveFunction(mMSE, mTr);  
+    mPhi = ObjectiveFunction(mMSE, mTr);
     PminPhi= minPhi;
     [minPhi, nIndex] = min(mPhi);
     iMSEi= mMSE(nIndex);
     Dthr=  sqrt(SortTD2(nIndex));
-    TriKSI = mTr(nIndex); % Update Tr for next step    
+    TriKSI = mTr(nIndex); % Update Tr for next step
     corr(:,2) = [1 : length(corr)]';
     % Sort the corresponding points
     corrTD = [corr, TD];
     SortCorrTD = sortrows(corrTD, 3);
     [R, t, TCorr, TData] = CalRtPhi(TData, SortCorrTD, TriKSI, Model, Data);
+    
+    if (abs(PminPhi-minPhi)<=10^(-6))
+        0==0;
+    end
 end
 
 
@@ -46,11 +50,11 @@ TData = transform_to_global(Data, R, t);
 %%%%%%%%%%%%%%%%%%%%%%% T(TData)->MData %%%%%%%%%%%%%%%%%%%%%%%%%
 % SVD solution
 function [R1, t1] = reg(corr, Model, Data)
-n = length(corr); 
-M = Model(:,corr(:,1)); 
+n = length(corr);
+M = Model(:,corr(:,1));
 mm = mean(M,2);
 S = Data(:,corr(:,2));
-ms = mean(S,2); 
+ms = mean(S,2);
 Sshifted = [S(1,:)-ms(1); S(2,:)-ms(2); S(3,:)-ms(3)];
 Mshifted = [M(1,:)-mm(1); M(2,:)-mm(2); M(3,:)-mm(3)];
 K = Sshifted*Mshifted';

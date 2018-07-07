@@ -86,4 +86,7 @@ threshold = gridStep*gridStep;
  end
 [v,idx] = min(Err);
 T = tform{idx};
-
+if(isempty(T))
+    disp(['match Failed with tarseed:' num2str(length(tarSeed)) ' srcSeed:' num2str(length(srcSeed)) ]);
+end
+end

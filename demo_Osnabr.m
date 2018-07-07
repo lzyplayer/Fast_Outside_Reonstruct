@@ -1,58 +1,66 @@
-% 本算法
-clc;clear;close all;
+% 本算法采用特征点匹配，ICP，回环检测，运动平均算法
+clc;close all;
 
 addpath('./flann/');
 addpath('./estimateRigidTransform');
-icpGridStep = 0.04;
-eigDGridStep = 0.04;
-% eigLoGridStep=0.03;
-% filepath='./data/local_frame/';
-% filePrefix='Hokuyo_';
-readnum=64;
+% load AVZbuilding_ori.mat  ;
+icpGridStep = 9;
+eigDGridStep = 0.3; %运行gridStepEstimate得到该值
+readnum=63;             %64 in total , start from 0
 % scannum=length(dir(datapath))-2;
-overlap = 0.4;
-icpToler=2e-05;
-ICPthreashold=100;
+overlap = 0.3;
+icpToler= 2;
+ICPthreashold= 50;
+maxPairDistance=800;
 res= 1;
-s=4000;
-load Osnabr_Data.mat;
-tic;
-N = length(clouds);
-for q=1:N
-    clouds{q}=pointCloud(clouds{q}.Location./s);
-end
+s= 1;
 
+% 准备基准帧
+N = length(clouds);
 MotionGlobal{1}=eye(4);
-dowmSampleClouds{1}=pcdownsample(pcdenoise(clouds{1}),'gridAverage',icpGridStep);
 globalCameraPosition=[0,0,0];
 relativeMotion{1}=eye(4);
 LoopDectNum=floor(N/4);
 cameraPosePair=[];
 LoopFlag=0;
 ns={};
-%% 　主循环
-for i=2:N
-    %   [relativeMotion,MSE]=forwardICP(ns,i,dowmSampleClouds,clouds,ICPthreashold,overlap);
-    dowmSampleClouds{i}=pcdownsample(pcdenoise(clouds{i}),'gridAverage',icpGridStep);
-    [currMotion2next]=pcregrigid(dowmSampleClouds{i-1},dowmSampleClouds{i},'Tolerance',[0.01/s,0.009]);
-    ns{i-1}=createns(dowmSampleClouds{i-1}.Location,'nsmethod','kdtree');
-    IcpModel=[dowmSampleClouds{i-1}.Location';ones(1,dowmSampleClouds{i-1}.Count)];
-    IcpData=[dowmSampleClouds{i}.Location';ones(1,dowmSampleClouds{i}.Count)];
-    [relativeMotion{i},MSE(i,1)]=myTrimICP(ns{i-1},IcpModel,IcpData,relativeMotion{i-1},ICPthreashold,overlap);
-    fixTimes=0; enhanceModelCloud=dowmSampleClouds{i-1};
-    if(MSE(i,1)>icpToler )   %单帧配准误差过大,
-        [relativeMotion{i}, MSE(i,1)]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res);
-    end
+fixedPointCloudN={};
+
+
+% 主循环
+generalTime=tic;
+for i=2
+    
+
+%     Model= clouds{i-1}.Location(1:res:end,:)';
+%     Data= clouds{i}.Location(1:res:end,:)';
+%     R0=relativeMotion{i-1}(1:3,1:3); t0=relativeMotion{i-1}(1:3,4);
+%     [MSE(i,1),R,t] = TrICP(Model, Data, R0, t0, ICPthreashold, overlap);
+%     relativeMotion{i} = Rt2M(R,t);
+
+%     if(MSE(i,1)>icpToler  )  %单帧配准误差过大,   
+          [relativeMotion{i}, MSE(i,1)]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,1);
+%     end
     MotionGlobal{i}=MotionGlobal{i-1}*relativeMotion{i};
     globalCameraPosition(i,:)=MotionGlobal{i}(1:3,4)';
+    
+%     routeDisplay(MotionGlobal,'b-o',false);
+    
+    
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
     if(size(globalCameraPosition,1)>LoopDectNum)
-        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag);
+        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,maxPairDistance,LoopFlag);
     end
     %% 回环结束_特征点匹配_匹配对扩展
     if((LoopPairNum==size(cameraPosePair,1) || i==N) && (LoopFlag==1 ))
+        routeDisplay(MotionGlobal,'b-*',true);
         accMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigDGridStep,res);
+        beforeMotion=(2:length(relativeMotion));
+        fixMotion=arrayfun(@(x) {relativeMotion{x},x-1,x} , beforeMotion ,'UniformOutput',false ); %补上前面fix结果
+        for f=1:length(fixMotion)
+            accMotion=[accMotion;fixMotion{f}];
+        end
         D=gen_Dij(accMotion,i);
         updatedGlobalMotion=MotionAverage(accMotion,MotionGlobal,D,size(accMotion,1),i);
         for k=1:length(updatedGlobalMotion)
@@ -60,10 +68,15 @@ for i=2:N
         end
         LoopFlag=0;
     end
-    
+        
 end
-toc
+generalTime=toc(generalTime)
 
-% [clouds] = readRawOutside(filepath,filePrefix,readnum,s);
-obtainResult(clouds,MotionGlobal);
+routeDisplay(MotionGlobal,'r-o',false);
+load Osnabr_Grt.mat;
+
+routeDisplay(GrtM,'g-s',false);
+
+% obtainResult(clouds,MotionGlobal);
+
 
