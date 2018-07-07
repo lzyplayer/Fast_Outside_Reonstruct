@@ -1,5 +1,6 @@
 *.mat
 *.asv
+*.fig
 /data
 !outside_ori.mat
 !outside_GRT.mat

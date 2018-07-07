@@ -18,7 +18,7 @@ for i=1:pairNum
     T = eigMatch(srcDesp{m},srcDesp{d},srcSeed{m},srcSeed{d},srcNorm{m},srcNorm{d},overlap,gridStep);
     T = inv(T); %为了提高运行效率，所以换过来算
     fixtime=1;
-    while(isempty(T)&&fixtime<3)
+    while(isempty(T)&&fixtime<5)
         [srcDesp{m},srcSeed{m},srcNorm{m}] = extractEig(clouds{m},(1-fixtime/10)*gridStep);
         [srcDesp{d},srcSeed{d},srcNorm{d}] = extractEig(clouds{d},(1-fixtime/10)*gridStep);
         T = eigMatch(srcDesp{m},srcDesp{d},srcSeed{m},srcSeed{d},srcNorm{m},srcNorm{d},0.3,(1-fixtime/10)*gridStep);

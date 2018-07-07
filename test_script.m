@@ -1,76 +1,86 @@
-figure;
-low=4;
-high=102;
-pairnum=15;
-pcshow(clouds{low});hold on;
-pcshow(pctransform(clouds{high},affine3d(accMotion{pairnum}')));%accMotion{pairnum}'
-
-
-figure;
-pcshow(clouds{10});
-figure;
-pcshow(clouds{120});
-
-% % gridstep=0.01;
-% % readnum=31;
-% % overlap = 0.4;
-% % res= 1;
-% % s=30;
-% % filepath='./data/local_frame/';
-% % filePrefix='Hokuyo_';
-% % load trimOutside;
-% % 自带配准效果不好
-% % readyCloud1=pcdownsample(pcdenoise(clouds{4}),'gridAverage',gridstep);
-% % readyCloud2=pcdownsample(pcdenoise(clouds{3}),'gridAverage',gridstep);
-% % [motion,result]=pcregrigid(readyCloud2,readyCloud1,'Tolerance',[0.01/s,0.009]);
-% % pcshow(result);
+% %% 展示accMotion中一对
+% figure;
+% toseeACC=121;
+% low=accMotion{toseeACC,2};
+% high=accMotion{toseeACC,3};
+% pcshow(clouds{low});hold on;
+% pcshow(pctransform(clouds{high},affine3d(accMotion{toseeACC}')));%accMotion{pairnum}'
+% 
+% %% 展示相对运动某对
+% tosee=239;
+% % for currsee=tosee:tosee+5
+% figure;
+% pcshow(clouds{tosee-1});hold on;
+% pcshow(pctransform(clouds{tosee},affine3d(relativeMotion{tosee}')));%accMotion{pairnum}'
+% % end
+% %% 分别展示2帧
+% figure;
+% pcshow(clouds{340});
 % % hold on;
+% figure;
+% pcshow(clouds{4});
+% 
+% %% 
+% % % gridstep=0.01;
+% % % readnum=31;
+% % % overlap = 0.4;
+% % % res= 1;
+% % % s=30;
+% % % filepath='./data/local_frame/';
+% % % filePrefix='Hokuyo_';
+% % % load trimOutside;
+% % % 自带配准效果不好
+% % % readyCloud1=pcdownsample(pcdenoise(clouds{4}),'gridAverage',gridstep);
+% % % readyCloud2=pcdownsample(pcdenoise(clouds{3}),'gridAverage',gridstep);
+% % % [motion,result]=pcregrigid(readyCloud2,readyCloud1,'Tolerance',[0.01/s,0.009]);
+% % % pcshow(result);
+% % % hold on;
+% % % 
+% % % 相邻展现
+% % % pcshow(clouds{4});
+% % % hold on;
+% % % pcshow(pctransform(clouds{3},currMotion2next));
 % % 
-% % 相邻展现
-% % pcshow(clouds{4});
+% % %我们ICP，加利用上回运动
+% % d=13;
+% % m=14;
+% % readyCloud1=pcdownsample(pcdenoise(clouds{d}),'gridAverage',gridstep);
+% % readyCloud2=pcdownsample(pcdenoise(clouds{m}),'gridAverage',gridstep);
+% % ns=createns(readyCloud2.Location,'nsmethod','kdtree');
+% % motion=myTrimICP(ns,[readyCloud2.Location';ones(1,readyCloud2.Count)],[readyCloud1.Location';ones(1,readyCloud1.Count)],relativeMotion{m-1},50,0.35);
+% % pcshow(clouds{m});
 % % hold on;
-% % pcshow(pctransform(clouds{3},currMotion2next));
-% 
-% %我们ICP，加利用上回运动
-% d=13;
-% m=14;
-% readyCloud1=pcdownsample(pcdenoise(clouds{d}),'gridAverage',gridstep);
-% readyCloud2=pcdownsample(pcdenoise(clouds{m}),'gridAverage',gridstep);
-% ns=createns(readyCloud2.Location,'nsmethod','kdtree');
-% motion=myTrimICP(ns,[readyCloud2.Location';ones(1,readyCloud2.Count)],[readyCloud1.Location';ones(1,readyCloud1.Count)],relativeMotion{m-1},50,0.35);
-% pcshow(clouds{m});
-% hold on;
-% pcshow(pctransform(clouds{d},affine3d(motion')));
-% 
-% %% 全局方向展现，和路径结合用
-% % ori=[0 0 0 ;100 100 100 ];%全局观测方向
-% ori=[0 0 0 ;0.01 0.01 0.01 ];
-% 
-% for i=1:length(MotionGlobal)
-%     currOri=MotionGlobal{i}*[ori';ones(1,size(ori,1))];
-%     eachOri{i}=currOri(1:3,:)';
-%     plot3(eachOri{i}(:,1),eachOri{i}(:,2),eachOri{i}(:,3),'r-o')
-%     hold on
+% % pcshow(pctransform(clouds{d},affine3d(motion')));
+% % 
+% % %% 全局方向展现，和路径结合用
+% % % ori=[0 0 0 ;100 100 100 ];%全局观测方向
+% % ori=[0 0 0 ;0.01 0.01 0.01 ];
+% % 
+% % for i=1:length(MotionGlobal)
+% %     currOri=MotionGlobal{i}*[ori';ones(1,size(ori,1))];
+% %     eachOri{i}=currOri(1:3,:)';
+% %     plot3(eachOri{i}(:,1),eachOri{i}(:,2),eachOri{i}(:,3),'r-o')
+% %     hold on
+% % end
+% % 
+% % %% 展示路径图
+% % 
+% route=[];
+% for p=1:length(MotionGlobal)
+%     route=[route; MotionGlobal{p}(1:3,4)'];
 % end
+% plot3(route(:,1),route(:,2),route(:,3),'-*');
+% xlabel('x');
+% ylabel('y');
+% zlabel('z');
+% % axis([-3000 3000 -3000 3000 -3000 3000 ]);
+% axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
 % 
-% %% 展示路径图
-% 
-route=[];
-for p=1:length(MotionGlobal)
-    route=[route; MotionGlobal{p}(1:3,4)'];
-end
-plot3(route(:,1),route(:,2),route(:,3),'-*');
-xlabel('x');
-ylabel('y');
-zlabel('z');
-% axis([-3000 3000 -3000 3000 -3000 3000 ]);
-axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
-
-% %test德国室内点云
-% scanTest=load('./data/scanTest.3d');
-% cloudTest=pointCloud(scanTest(:,1:3));
-% pcshow(cloudTest);
-% 
+% % %test德国室内点云
+% % scanTest=load('./data/scanTest.3d');
+% % cloudTest=pointCloud(scanTest(:,1:3));
+% % pcshow(cloudTest);
+% % 
 
 
 %% 某两帧eig匹配
@@ -120,3 +130,8 @@ fixMotion=cellfun(@(x) {relativeMotion{x},x-1,x} , {2,3},'UniformOutput',false )
 cellfun(@(x) {relativeMotion{x},x-1,x} , fixedPointCloudN,'UniformOutput',false );
 cell2mat(fixMotion)
 [accMotion;fixMotion{1}]
+
+%% 求两点距离
+p1=[24.29 117];
+p2=[44.38 16.68];
+norm(p2-p1)
