@@ -11,7 +11,8 @@ readnum=942;
 overlap = 0.3;
 icpToler= 10;
 ICPthreashold= 200;
-maxPairDistance=22;%22
+maxPairDistance=22;%22回环检测阈值应当是变化量  0.345（差距）-12.05
+loopMAmaxNum=15;
 MseHold=10;
 res= 1;
 s= 1;
@@ -23,17 +24,17 @@ N = length(clouds);
 MotionGlobal{1}=eye(4);
 globalCameraPosition=[0,0,0];
 relativeMotion{1}=eye(4);
-LoopDectNum=80;%floor(N/4);
+LoopDectNum=50;%floor(N/4);
 cameraPosePair=[];
 LoopFlag=0;
-ns={};
-lastLoopNum=0;   %新思路！！！ 回环检测阈值应当是变化量
+lastLoopNum=1;   %回环检测阈值应当是变化量
 currLoop=0;
-fixedPointCloudN={};
+% fixedPointCloudN={};
+historyAccMotion={};
 %% 　主循环
-N=330;
+N=670;
 for i=2:N
-%     if i==239
+%     if i==530
 %         0==0;
 %     end
     Model=clouds{i-1}.Location';
@@ -42,8 +43,8 @@ for i=2:N
     t0=relativeMotion{i-1}(1:3,4);
     [MSE(i,1),R,t] = TrICP(Model, Data, R0, t0, ICPthreashold, overlap);
     relativeMotion{i}=Rt2M(R,t);
-    if(MSE(i,1)>icpToler || i==239 )   %单帧配准误差过大,     239得修复
-        [Motion, mse]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res);
+    if(MSE(i,1)>icpToler || i==239 || ((i>680)&&(i<689)) )   %单帧配准误差过大,     
+        [Motion, mse]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res,i);
         if(~isempty(Motion))
             relativeMotion{i}=Motion;MSE(i,1)=mse;
         end
@@ -55,20 +56,29 @@ for i=2:N
     
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
-    if(size(globalCameraPosition,1)>LoopDectNum)
+    if(size(globalCameraPosition,1)>LoopDectNum && (i-lastLoopNum>35)) %防止两次修正太近
         [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,maxPairDistance,LoopFlag);
     end
     
     %% 回环结束_特征点匹配_匹配对扩展
-    if((LoopPairNum==size(cameraPosePair,1) || i==N) && (LoopFlag==1 ))
-        disp('Loop detected completed, Motion Averaging starting...')
+    if((i-lastLoopNum>35)&&(LoopPairNum==size(cameraPosePair,1) || LoopPairNum>=loopMAmaxNum-3 || i==N) && (LoopFlag==1 ))
+        currLoop=currLoop+1;
+        disp(['Loop ' num2str(currLoop)  ' detected completed, Motion Averaging starting...'])
         MotionGlobalBackup=MotionGlobal;
         accMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigDGridStep,res,MseHold);
-%         historyAccMotion=accMotion;
+        if(isempty(accMotion))  %估测错误，特征点匹配并不好，
+            LoopFlag=0;
+            cameraPosePair=[];
+            lastLoopNum=i;
+            continue;
+        end
+        accMotion=[accMotion;historyAccMotion];
+        historyAccMotion=accMotion;
         beforeMotion=(2:length(relativeMotion));
         indiAccMotion=~cellfun(@(a) isempty(a) ,accMotion,'UniformOutput',true);
         trimmedMotion=accMotion(indiAccMotion(:,1),1:3);
         fixMotion=arrayfun(@(x) {relativeMotion{x},x-1,x} , beforeMotion ,'UniformOutput',false ); %补上前面fix结果
+        fixMotion{length(fixMotion)+1}={eye(4),1,1};
         for f=1:length(fixMotion)
             trimmedMotion=[trimmedMotion;fixMotion{f}];
         end
@@ -78,19 +88,22 @@ for i=2:N
             MotionGlobal{k}=updatedGlobalMotion{k};
         end
         LoopFlag=0;
+        cameraPosePair=[];
         lastLoopNum=i;
-        maxPairDistance=80;
-        LoopDectNum=290;
+%         maxPairDistance=100;
+%         LoopDectNum=290;
+        disp(['Loop ' num2str(currLoop) ', Motion Averaging completed' ] );
+        disp(' ');
+        disp(' ICP forward registering'  );
     end
     
 end
 generalTime=toc(generalTime)
 routeDisplay(MotionGlobalBackup,'b-*',true);
 routeDisplay(MotionGlobal,'r-o',false);
-% % MotionGlobal=cellfun(@(b) b(1:3,4) ,(cellfun(@(a) inv(a) ,MotionGlobal ,'UniformOutput',false)),'UniformOutput',false);
-% load Hannover_GRpose.mat
-% pose(:,1)=zeros(length(pose),1);
-% routeDisplay(pose,'g-s',true);
+
+% load hannover_GrtM_z_ConvertNeed.mat
+% routeDisplay(GrtM(1:680),'g-d',true);%(1:532)
 
 obtainResult(clouds,MotionGlobal,false);
 

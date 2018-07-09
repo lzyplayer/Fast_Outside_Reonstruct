@@ -26,6 +26,7 @@ xlabel('x');
 ylabel('y');
 zlabel('z');
 hold on;
+% 
 % limit=max(max(abs(route)));
 % axis([-limit limit -limit limit -limit limit ])
 

@@ -36,7 +36,18 @@ save hannover2zoomed.mat clouds;
 
 
 
+%% 读取真值 start from frame22
+s=1e-1;
+filepathWp='./data/hannover2/6Dreg.dat';
+indata=load(filepathWp,'X6Dreg');
+GrtM=cell(size(indata,1),1);
+for i=1:size(indata,1)
+    GrtM{i}=[indata(i,1:4);indata(i,5:8);indata(i,9:12);indata(i,13:15).*s,indata(i,16)]';
+end
+routeDisplay(GrtM,'b-*',true );
 
+
+%% 逐行变换 不好
 %     fidin = fopen([filepathWp prefix],'r');
 %     nline = 0;
 %     currscan=zeros(81360,4);

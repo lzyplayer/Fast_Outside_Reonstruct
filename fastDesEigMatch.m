@@ -4,7 +4,7 @@ function [ motionInfo ] = fastDesEigMatch( clouds, cameraPair,overlap,gridStep,r
 % gridStep=0.03;
 % overlap=0.35;
 % res=10;
-eigMSEs=[];
+eigMSEs=[];motionInfo={};
 requiredCloudList=unique(cameraPair(:,1:2));
 for i=1:length(requiredCloudList)
     [srcDesp{requiredCloudList(i)},srcSeed{requiredCloudList(i)},srcNorm{requiredCloudList(i)}] = extractEig(clouds{requiredCloudList(i)},gridStep);
