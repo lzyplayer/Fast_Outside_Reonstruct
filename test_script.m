@@ -1,25 +1,37 @@
- updatedGlobalMotion=MotionAverage(trimmedMotion,MotionGlobal,D,size(trimmedMotion,1),i);
-%% 展示accMotion中一对
+%% 真值处理
+load hannover_GrtM_z_ConvertNeed.mat
+for i=1:length(GrtM)
+    EulerIn=rotm2eul(GrtM{i}(1:3,1:3),'XYZ');
+    conEuler=[EulerIn(3),EulerIn(1),EulerIn(2)];
+    conRot=eul2rotm(conEuler,'XYZ');
+    conTran=[GrtM{i}(3,4);GrtM{i}(1,4);GrtM{i}(2,4)];
+    conGrtM{i}=Rt2M(conRot,conTran);
+% conGrtM{i}=(GrtM{1})\GrtM{i};
+end
+
+%% 展示historyAccMotion中一对
 figure;
-toseeACC=1;
-low=accMotion{toseeACC,2};
-high=accMotion{toseeACC,3};
+toseeACC=8;
+low=historyAccMotion{toseeACC,2};
+high=historyAccMotion{toseeACC,3};
 pcshow(clouds{low});hold on;
-pcshow(pctransform(clouds{high},affine3d(accMotion{toseeACC}')));%accMotion{pairnum}'
+pcshow(pctransform(clouds{high},affine3d(historyAccMotion{toseeACC}')));%historyAccMotion{pairnum}'
 
 %% 展示相对运动某对
-tosee=347;
-% for currsee=tosee:tosee+5
+tosee=518;
+% for currsee=tosee:tosee+8
 figure;
 pcshow(clouds{tosee-1});hold on;
-pcshow(pctransform(clouds{tosee},affine3d(relativeMotion{tosee}')));%accMotion{pairnum}'
+pcshow(pctransform(clouds{tosee},affine3d(relativeMotion{tosee}')));%historyAccMotion{pairnum}'
 % end
 %% 分别展示2帧
 figure;
-pcshow(clouds{247});
-% hold on;
-figure;
-pcshow(clouds{673});
+a=517;
+pcshow(pctransform( clouds{a},affine3d(MotionGlobal{a}')));
+hold on;
+% figure;
+b=518;
+pcshow(pctransform( clouds{b},affine3d(MotionGlobal{b}')));
 
 % pc自带ICp算法
 gridstep=0.01;
@@ -130,9 +142,12 @@ pcshow(pctransform(clouds{tar},affine3d( Motion')));
 fixMotion=cellfun(@(x) {relativeMotion{x},x-1,x} , {2,3},'UniformOutput',false )
 cellfun(@(x) {relativeMotion{x},x-1,x} , fixedPointCloudN,'UniformOutput',false );
 cell2mat(fixMotion)
-[accMotion;fixMotion{1}]
+[historyAccMotion;fixMotion{1}]
 
 %% 求两点距离
-p1=[24.29 117];
-p2=[44.38 16.68];
+
+
+
+p1=[-449.7,1229];
+p2=[-348.8,1376];
 norm(p2-p1)

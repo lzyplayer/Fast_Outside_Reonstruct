@@ -1,4 +1,4 @@
-function  routeDisplay( MotionGlobal ,type ,newFigure)
+function  routeDisplay( MotionGlobal ,type ,newFigure,specialshow)
 %ROUTEDISPLAY 此处显示有关此函数的摘要
 %   此处显示详细说明
 if(newFigure)
@@ -21,14 +21,14 @@ if(iscell(MotionGlobal))
 else
     route=MotionGlobal;
 end
-plot3(route(:,1),route(:,2),route(:,3),type);
+plot3(route(:,1),route(:,2),route(:,3),type);%zeros(length(route),1)
 xlabel('x');
 ylabel('y');
 zlabel('z');
 hold on;
-% 
-% limit=max(max(abs(route)));
-% axis([-limit limit -limit limit -limit limit ])
+axis equal;
+
+plot3(route(specialshow,1),route(specialshow,2),route(specialshow,3),'dk','MarkerSize',10);
 
 end
 
