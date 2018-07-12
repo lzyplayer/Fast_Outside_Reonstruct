@@ -1,4 +1,4 @@
-function Motion= MotionAverage(updatedMotion,Motion,D,num,N)
+function Motion= MotionAverage(updatedMotion,Motion,D,num,N,FirstLoopNum)
 
 erro= 10;
 Dpi= pinv(D);
@@ -17,7 +17,7 @@ while (erro>10^(-4))&(ii<100)
     end
     
     dV= Dpi*V;
-    for i= 2:N
+    for i= FirstLoopNum:N
         id= i*6-5;
         Motion{i}= expm(vec2matrix(dV(id:id+5,:)))*Motion{i};
         Motion{i}=real(Motion{i});

@@ -8,7 +8,10 @@ for i=1:length(GrtM)
     conGrtM{i}=Rt2M(conRot,conTran);
 % conGrtM{i}=(GrtM{1})\GrtM{i};
 end
-
+%% 相对位置变化限制
+for i=2:length(relativeMotion)
+    distance(i)=norm(  relativeMotion{i}(1:3,4));
+end
 %% 展示historyAccMotion中一对
 figure;
 toseeACC=8;
@@ -148,6 +151,6 @@ cell2mat(fixMotion)
 
 
 
-p1=[-449.7,1229];
-p2=[-348.8,1376];
+p1=[-454.1,1237]
+p2=[-400,1327]
 norm(p2-p1)
