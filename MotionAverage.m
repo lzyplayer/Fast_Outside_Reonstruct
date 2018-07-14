@@ -1,3 +1,4 @@
+
 function Motion= MotionAverage(updatedMotion,Motion,D,num,N,FirstLoopNum,loopNumList)
 
 erro= 10;

@@ -6,6 +6,7 @@ addpath('./estimateRigidTransform');
 eigDGridStep = 30;
 % eigLoGridStep=0.03;
 load LoopDisCal.mat
+
 readnum=942;
 % scannum=length(dir(datapath))-2;
 overlap = 0.45;
@@ -14,6 +15,7 @@ ICPthreashold= 200;
 % %22回环检测阈值应当是变化量  0.345（差距）-12.05maxPairDistance=22;
 turnThreshold=0.3;
 loopMAmaxNum=16;
+
 turnLengthNum=6;
 MseHold=10;
 spacebetweenLoop=25;
@@ -34,8 +36,8 @@ LoopFlag=0;
 turnFlag=0;
 lastLoopNum=1;   %回环检测阈值应当是变化量
 currLoop=0;
-% maxDis=15; %临时[22,100,17,50,245,30]
 historyCameraPose=[];
+
 % fixedPointCloudN={};
 historyAccMotion={};
 %% 　主循环
@@ -45,36 +47,7 @@ while i<=N
 %     if i==445
 %         turnFlag=0;%turnFlag=5;
 %     end
-    %     if i==392
-    %         turnFlag=turnLengthNum;%turnFlag=5;
-    %     end
-%     if i==345
-%         maxDis=18;
-%     end
-%     if i==600
-%         spacebetweenLo
-%     end
-%     if i==742
-%         spacebetween
-%     end
-%     if i==236
-%         maxDis=100;
-%     end
-%     if i==492
-%         maxDis=23;
-%     end
-%     if i==560
-%         maxDis=50;
-%     end
-%     if i==750
-%         maxDis=120;
-%     end
-%     if i==785
-%         0==0;
-%     end
-%     if  i==800
-%         maxDis=22;
-%     end
+
     Model=clouds{i-1}.Location';
     Data=clouds{i}.Location';
     R0=relativeMotion{i-1}(1:3,1:3);
@@ -121,6 +94,7 @@ while i<=N
         historyCameraPose=[historyCameraPose;[cameraPosePair,cameraPosePair(:,2)-lastLoopNum]];
         currLoop=currLoop+1;
         loopNumList(currLoop)=i;
+
         disp(['Loop ' num2str(currLoop)  ' detected completed, Motion Averaging starting...']);
         if(max(cameraPosePair(:,1))>lastLoopNum+15)     %内环处理
             disp(['Loop ' num2str(currLoop)  ' is inner Loop, storing Loop Motion...']);
@@ -153,8 +127,7 @@ while i<=N
         end
         D=gen_Dij(trimmedMotion,length(relativeMotion),loopNumList);
         updatedGlobalMotion=MotionAverage(trimmedMotion,MotionGlobal,D,size(trimmedMotion,1),i,2,loopNumList);
-%         D=gen_Dij(trimmedMotion,length(relativeMotion));
-%         updatedGlobalMotion=MotionAverage(trimmedMotion,MotionGlobal,D,size(trimmedMotion,1),i,2);
+
         for k=1:length(updatedGlobalMotion)
             MotionGlobal{k}=updatedGlobalMotion{k};
         end
