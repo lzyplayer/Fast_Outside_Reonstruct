@@ -1,15 +1,18 @@
-function [ cameraPosePair ,flag] = estimateLoop( globalCameraPosition,cameraPosePair,LoopDectNum ,flag,maxDis )
+function [ cameraPosePair ,flag] = estimateLoop( globalCameraPosition,cameraPosePair,LoopDectNum ,flag,lastLoop,loopDisCal )
 %ESTIMATELOOP 此处显示有关此函数的摘要
 %   此处显示详细说明
-addNum=0;
 curr=length(globalCameraPosition);
 currPair=[];
-if length(globalCameraPosition)==794
-    0==0;
-end
 
 for i=1:curr-LoopDectNum
 %     maxDis=0.345*(curr-i)-19.4;         %sqrt(curr-lastLoopNum)*23;
+    maxDis=loopDisCal(curr-i,curr-lastLoop);
+    if isnan(maxDis) %|| (curr<680 && curr>630
+        maxDis=30;
+    end
+    if (curr<680 && curr>630) %|| (curr<680 && curr>630
+        maxDis=50;
+    end 
     distance=norm(globalCameraPosition(curr,1:2)-globalCameraPosition(i,1:2));
     if(distance)< maxDis
         pairInfo=[i curr distance];
