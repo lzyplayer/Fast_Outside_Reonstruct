@@ -1,4 +1,4 @@
-function [turnFlag,zAxis] = turnDectecion(currMotion,turnThreshold)
+function [turnFlag,zAxis,planeAxis] = turnDectecion(currMotion,turnThreshold)
 %UNTITLED 此处显示有关此函数的摘要
 %   此处显示详细说明
 turnFlag=false;
@@ -7,5 +7,6 @@ zAxis=abs(turn(3));
 if zAxis>=turnThreshold
     turnFlag=true;
 end
+planeAxis=max(abs(turn(1:2)));
 end
 
