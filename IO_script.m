@@ -1,13 +1,13 @@
 clc;clear;
 close all;
 
-filepathWp='./data/hannover2/hannover2/scan3d_0_';
+filepathWp='G:\dc_Rpcr\multi_method_env_reconstruct\Fast_Outside_Reonstruct\data\hannover2\hannover2\scan3d_0_';
 % dirInfo=dir('./data/dat_et4/');
 scannum=924   ;%(length(dirInfo)-2)/2;
 % lastnum=scannum-1;
 route=[];
 % clouds=cell(scannum,1);
-for k=1:scannum
+for k=2%:scannum
     ordernum=num2str(k);
 %     while(length(ordernum)<3)
 %         ordernum=['0' ordernum];
@@ -34,7 +34,15 @@ for k=1:scannum
 end
 save hannover2zoomed.mat clouds;
 
+%% 读取里程计数据
+odometry=odometry0syncinterpol(23:end , :);
 
+for i=1:size(odometry,1)
+    t=odometry(i,1:3)';
+    R=quat2rotm(odometry(i,4:7));
+    Motion1(i)=inv(Rt2M(R,t));  %需要考量
+    firstCentralMotion(i)=(Motion1(1))\Motion1(i);
+end
 
 %% 读取真值 start from frame22
 s=1e-1;

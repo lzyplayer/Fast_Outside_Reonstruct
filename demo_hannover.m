@@ -21,7 +21,7 @@ res= 1;
 s= 1;
 % clouds=readCloudCsv(filepath,filePrefix,readnum,0.6 ,s);
 load hannover2_MZ.mat
-
+load LoopDisCal_backup.mat
 generalTime=tic;
 N = length(clouds);
 MotionGlobal{1}=eye(4);
@@ -37,25 +37,16 @@ currLoop=0;
 maxDis=23; %临时[22,100,17,50,245,30]
 % fixedPointCloudN={};
 historyAccMotion={};
+historyCameraPosePair=[];
 %% 　主循环
 N=903;
 i=2;
 while i<=N
-%     if i==445
-%         turnFlag=0;%turnFlag=5;
-%     end
-    %     if i==392
-    %         turnFlag=turnLengthNum;%turnFlag=5;
-    %     end
+
     if i==345
         maxDis=18;
     end
-%     if i==600
-%         spacebetweenLo
-%     end
-%     if i==742
-%         spacebetween
-%     end
+
     if i==236
         maxDis=100;
     end
@@ -72,7 +63,7 @@ while i<=N
         0==0;
     end
     if  i==800
-        maxDis=22;
+        maxDis=40;
     end
     Model=clouds{i-1}.Location';
     Data=clouds{i}.Location';
@@ -80,7 +71,7 @@ while i<=N
     t0=relativeMotion{i-1}(1:3,4);
     [MSE(i,1),R,t] = TrICP(Model, Data, R0, t0, ICPthreashold, overlap);
     relativeMotion{i}=Rt2M(R,t);
-        [isTurn , turn(i),planeErr(i)]=turnDectecion(relativeMotion{i},turnThreshold);
+    [isTurn , turn(i),planeErr(i)]=turnDectecion(relativeMotion{i},turnThreshold);
     
     if(isTurn && turnFlag==0 )
         turnFlag=turnLengthNum;
@@ -112,12 +103,13 @@ while i<=N
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
     if(size(globalCameraPosition,1)>LoopDectNum && (i-lastLoopNum>spacebetweenLoop)) %防止两次修正太近
-        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag,maxDis);
+        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag,lastLoopNum,LoopDisCal,maxDis);
     end
     
     %% 回环结束_特征点匹配_匹配对扩展
     if((i-lastLoopNum>spacebetweenLoop)&&(LoopPairNum==size(cameraPosePair,1) || LoopPairNum>=loopMAmaxNum-4 || i==N) && (LoopFlag==1 ))
         currLoop=currLoop+1;
+        historyCameraPosePair=[historyCameraPosePair;[cameraPosePair,cameraPosePair(:,2)-lastLoopNum]];
         loopNumList(currLoop)=i;
         disp(['Loop ' num2str(currLoop)  ' detected completed, Motion Averaging starting...']);
         if(max(cameraPosePair(:,1))>lastLoopNum+15)     %内环处理
