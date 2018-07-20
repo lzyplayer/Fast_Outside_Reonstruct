@@ -151,6 +151,10 @@ cell2mat(fixMotion)
 
 
 
-p1=[-384.2 1035]
-p2=[-360.6 1036]
+p1=[-364.2 1268]
+p2=[-411.6 1213]
 norm(p2-p1)
+x=historyCameraPosePair(:,2)-historyCameraPosePair(:,1);
+y=historyCameraPosePair(:,4);
+z=historyCameraPosePair(:,3);
+cftool(x,y,z)

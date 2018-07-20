@@ -21,7 +21,7 @@ res= 1;
 s= 1;
 % clouds=readCloudCsv(filepath,filePrefix,readnum,0.6 ,s);
 load hannover2_MZ.mat
-load LoopDisCal_backup.mat
+load LoopDisCal.mat
 generalTime=tic;
 N = length(clouds);
 MotionGlobal{1}=eye(4);
@@ -43,28 +43,6 @@ N=903;
 i=2;
 while i<=N
 
-    if i==345
-        maxDis=18;
-    end
-
-    if i==236
-        maxDis=100;
-    end
-    if i==492
-        maxDis=23;
-    end
-    if i==560
-        maxDis=50;
-    end
-    if i==750
-        maxDis=40;
-    end
-    if i==785
-        0==0;
-    end
-    if  i==800
-        maxDis=40;
-    end
     Model=clouds{i-1}.Location';
     Data=clouds{i}.Location';
     R0=relativeMotion{i-1}(1:3,1:3);
