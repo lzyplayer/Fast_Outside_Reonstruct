@@ -21,7 +21,7 @@ pcshow(clouds{low});hold on;
 pcshow(pctransform(clouds{high},affine3d(historyAccMotion{toseeACC}')));%historyAccMotion{pairnum}'
 
 %% 展示相对运动某对
-tosee=518;
+tosee=2;
 % for currsee=tosee:tosee+8
 figure;
 pcshow(clouds{tosee-1});hold on;
@@ -103,14 +103,14 @@ axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
 s=1;
 % ModelCloud=clouds{1};
 % DataCloud=clouds{2};
-ModelCloud=pointCloud(clouds{1}.Location);
-DataCloud=pointCloud(clouds{96}.Location);
+ModelCloud=pointCloud(clouds{234}.Location);
+DataCloud=pointCloud(clouds{687}.Location);
 gridStep=30;
 overlap=0.4;
 res=1;
 [tarDesp,tarSeed,tarNorm] = extractEig(ModelCloud,gridStep); 
 [srcDesp,srcSeed,srcNorm] = extractEig(DataCloud,gridStep);
-T = eigMatch(tarDesp,srcDesp,tarSeed,srcSeed,tarNorm,srcNorm,overlap,gridStep);
+T = eigMatch(tarDesp,srcDesp,tarSeed,srcSeed,tarNorm,srcNorm,overlap,gridStep,0.3);
 T = inv(T);
 R0= T(1:3,1:3);
 t0= T(1:3,4);
@@ -148,13 +148,12 @@ cell2mat(fixMotion)
 [historyAccMotion;fixMotion{1}]
 
 %% 求两点距离
-
-
-
-p1=[-364.2 1268]
-p2=[-411.6 1213]
+p1=[-1.262 0.6227]
+p2=[0,0]
 norm(p2-p1)
+
+%% 点间关系拟合
 x=historyCameraPosePair(:,2)-historyCameraPosePair(:,1);
 y=historyCameraPosePair(:,4);
 z=historyCameraPosePair(:,3);
-cftool(x,y,z)
+reTool1=cftool(x,y,z);
