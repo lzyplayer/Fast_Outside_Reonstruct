@@ -1,3 +1,16 @@
+%% velodye Êý¾Ý¶ÁÈ¡
+filePath='./data/IAIR303/ourSide/resultIAIR303_';
+scannum=13;
+for i=1:scannum
+    indata=importdata([filePath num2str(i) '.txt']);
+    pointsFar=sqrt(indata(:,1).^2+indata(:,2).^2)>4.5;
+    pointsGround=indata(:,3)<-0.65;
+    pointSelect=~(pointsFar | pointsGround);
+    clouds{i}=pointCloud(indata(pointSelect,1:3));
+end
+
+
+%% 
 clc;clear;
 close all;
 
