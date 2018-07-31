@@ -1,6 +1,8 @@
 *.mat
 *.asv
-#*.fig
+*.fig
 /data
 !outside_ori.mat
 !outside_GRT.mat
+!IAIR303_ourside.mat
+!loopDiscCal_poly.mat

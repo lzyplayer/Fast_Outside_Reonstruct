@@ -74,6 +74,7 @@ routeDisplay(GrtM,'b-*',true );
 %     currscan=zeros(81360,4);
 %     while ~feof(fidin)         %判断是否为文件末尾
 %         nline = nline+1;
+%                         
 %         tline = fgetl(fidin);         %从文件读行
 %         if(nline>1)
 %         currscan(nline-1,:) = str2num(tline);

@@ -9,8 +9,8 @@ currPair=[];
 for i=1:curr-LoopDectNum
 
     distance=norm(globalCameraPosition(curr,1:2)-globalCameraPosition(i,1:2));%     maxDis=0.345*(curr-i)-19.4;         %sqrt(curr-lastLoopNum)*23;
-    maxDis=loopDisCal(curr-i,lastLoopNum);
-    if isnan(maxDis)
+    maxDis=loopDisCal(curr-i,curr-lastLoopNum); %lastLoopNum
+    if isnan(maxDis) || maxDis<5
         maxDis=20;
     end
     if(distance)< maxDis

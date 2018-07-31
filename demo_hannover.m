@@ -21,7 +21,7 @@ res= 1;
 s= 1;
 % clouds=readCloudCsv(filepath,filePrefix,readnum,0.6 ,s);
 load hannover2_MZ.mat
-load LoopDisCal.mat
+load loopDiscCal_poly.mat
 generalTime=tic;
 N = length(clouds);
 MotionGlobal{1}=eye(4);
@@ -81,7 +81,7 @@ while i<=N
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
     if(size(globalCameraPosition,1)>LoopDectNum && (i-lastLoopNum>spacebetweenLoop)) %防止两次修正太近
-        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag,lastLoopNum,LoopDisCal,maxDis);
+        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag,lastLoopNum,loopDisCal,maxDis);
     end
     
     %% 回环结束_特征点匹配_匹配对扩展
