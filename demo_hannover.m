@@ -42,7 +42,7 @@ historyCameraPosePair=[];
 N=903;
 i=2;
 while i<=N
-
+    disp(['processing frame ' num2str(i) '...']);
     Model=clouds{i-1}.Location';
     Data=clouds{i}.Location';
     R0=relativeMotion{i-1}(1:3,1:3);

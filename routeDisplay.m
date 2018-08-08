@@ -32,3 +32,5 @@ plot3(route(specialshow,1),route(specialshow,2),route(specialshow,3),'dk','Marke
 
 end
 
+
+

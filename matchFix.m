@@ -5,6 +5,7 @@ function [ Motion ,MSE ] = matchFix( ModelCloud,DataCloud ,overlap,gridStep,res,
 % gridStep=0.04;
 % overlap=0.35;
 % res=10;
+
 MSE=0;
 % [tarDesp,tarSeed,tarNorm] = extractEig(ModelCloud,gridStep);
 % [srcDesp,srcSeed,srcNorm] = extractEig(DataCloud,gridStep);
@@ -43,7 +44,7 @@ Model= ModelCloud.Location(1:res:end,:)';
 Data= DataCloud.Location(1:res:end,:)';
 %
 [MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap);
-if(MSE>100)
+if(MSE>500)
     Motion=[];
     warning(['cannot match cloud ' num2str(curr) ' with prev']);
     return;
