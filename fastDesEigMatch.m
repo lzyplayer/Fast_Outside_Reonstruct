@@ -37,6 +37,7 @@ for i=1:pairNum
     [MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap); 
     %     num= num+1
     if (MSE > MseHold )%5.0*mean(eigMSEs)
+        disp(['Mse: ' num2str(MSE)]);
         continue;
     end
     eigMSEs= [eigMSEs, MSE];
