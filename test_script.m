@@ -103,9 +103,9 @@ axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
 s=1;
 % ModelCloud=clouds{1};
 % DataCloud=clouds{2};
-ModelCloud=pointCloud(clouds{234}.Location);
-DataCloud=pointCloud(clouds{687}.Location);
-gridStep=30;
+ModelCloud=pointCloud(pointCMap1.Location);%clouds{234}
+DataCloud=pointCloud(pointCMap2.Location);%clouds{687}
+gridStep= 6.9841;%30
 overlap=0.4;
 res=1;
 [tarDesp,tarSeed,tarNorm] = extractEig(ModelCloud,gridStep); 

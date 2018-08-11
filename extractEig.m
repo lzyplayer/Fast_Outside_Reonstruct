@@ -33,7 +33,7 @@ end
 s = s';
 ds = diff(s);
 srcDesp = reshape(ds,3*(K-1),[]);
-n = mat2cell(n,3*ones(M,1),K);
+n = mat2cell(n,3*ones(M,1),K); %每个点在4个半径下的特征向量
 srcNorm = cellfun(@(x)reshape(x,[],1),n','uni',false);
 srcNorm = cell2mat(srcNorm);
 

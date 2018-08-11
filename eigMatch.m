@@ -22,11 +22,13 @@ threshold = gridStep*gridStep;
 %   for n = 1:N
     seed = srcSeed(:,seedIdx(n));
     seedNorm = srcNorm(:,seedIdx(n));
-    
+     %%  当前点特征向量与所有其他特殊点的內积
     % source point cloud
     d = bsxfun(@minus,srcSeed,seed);
     d = sqrt(sum(d.^2,1)); % distance
     inProd = bsxfun(@times,srcNorm,seedNorm);
+    %分别取四个特征向量的首元素，中间元素，末尾元素
+    %然后将每个特征向量各自sum，一共4个
     inProd = inProd(1:3:end,:) + inProd(2:3:end,:) + inProd(3:3:end,:);
     theta = real(acosd(inProd));  % inner product
 
