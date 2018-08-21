@@ -5,7 +5,7 @@ addpath('./flann/');
 addpath('./estimateRigidTransform');
 eigDGridStep = 30;
 % eigLoGridStep=0.03;
-mergeGridStep = 4;
+mergeGridStep = 5;
 readnum=942;
 % scannum=length(dir(datapath))-2;
 overlap = 0.45;
@@ -39,6 +39,28 @@ maxDis=23; %临时[22,100,17,50,245,30]
 historyAccMotion={};
 historyCameraPosePair=[];
 fullCloud=clouds{1};
+%% about the axes
+curFig=figure('Position',[7 76 1382 919]);
+reAxes=pcshow(fullCloud);
+title('Slam On Hannover2')
+% reAxes.CameraViewAngleMode = 'auto';
+reAxes.CameraPosition=[-3037.32 -4448.29 -5802.49];
+reAxes.CameraTarget=[-154.458 346.5108 -457.597];
+reAxes.CameraUpVector=[0.35594 0.59201 -0.72306];
+reAxes.CameraViewAngle=14.01893;
+reScatter = reAxes.Children;
+
+routeFig=figure('Position',[1327.0 49 587.0 922.0]);
+routeAxes=axes();
+title('Slam Route On Hannover2')
+load hannover2_GrtM_z.mat
+routeDisplay(GrtM,'g-d',false,[]);
+routeAxes.CameraPosition=[165.05 572.619 -9765.724];
+routeAxes.CameraTarget=[94.22 416.93 33.024];
+routeAxes.CameraUpVector=[0.414 0.9100 0.0174];
+routeAxes.CameraViewAngle=8.8671;
+
+pause(6);
 %% 　主循环
 N=903;
 i=2;
@@ -76,9 +98,17 @@ while i<=N
 
     MotionGlobal{i}=MotionGlobal{i-1}*relativeMotion{i};
     globalCameraPosition(i,:)=MotionGlobal{i}(1:3,4)';
+    %% anime
     
     fullCloud = pcmerge(fullCloud,pcZTransMulti(clouds{i},MotionGlobal{i}),mergeGridStep);
-    %%  %%                EDIT      HERE !!!
+    reScatter.XData=fullCloud.Location(:,1);
+    reScatter.YData=fullCloud.Location(:,2);
+    reScatter.ZData=fullCloud.Location(:,3);
+    reScatter.CData=fullCloud.Location(:,3);
+    drawnow()
+    
+    routeHandle=routeAnimePlugin(  MotionGlobal,'r-o',routeAxes);
+    
     
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
@@ -102,7 +132,7 @@ while i<=N
             continue;
         end
         MotionGlobalBackup=MotionGlobal;
-        save(['Loop' num2str(currLoop) 'BeforeMA'],'MotionGlobalBackup');
+        
         accMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigDGridStep,res,MseHold);
         if(isempty(accMotion))  %估测错误，特征点匹配并不好，
             LoopFlag=0;
@@ -126,7 +156,7 @@ while i<=N
         for k=1:length(updatedGlobalMotion)
             MotionGlobal{k}=updatedGlobalMotion{k};
         end
-        save(['Loop' num2str(currLoop)],'MotionGlobal');
+       
         LoopFlag=0;
         cameraPosePair=[];
         %         historyAccMotion={};
@@ -135,6 +165,14 @@ while i<=N
         %         LoopDectNum=290;
         disp(['Loop ' num2str(currLoop) ', Motion Averaging completed' ] );
         disp(' ');
+        %% anime
+        cla;routeDisplay(GrtM,'g-d',false,[]);
+        routeHandle=routeAnimePlugin(  MotionGlobal,'r-o',routeAxes);
+        disp('renew figure...');
+        fullCloud=clouds{1};
+        for c=2:length(MotionGlobal)
+            fullCloud=pcmerge(fullCloud,pcZTransMulti(clouds{c},MotionGlobal{c}),mergeGridStep);
+        end
         disp(' ICP forward registering...'  );
     end
     i=i+1;
@@ -147,7 +185,7 @@ for tu=1:length(turnHead)
     turnPoints=[turnPoints,turnHead(tu)-1:turnHead(tu)+turnLengthNum-2];
 end
 routeDisplay(MotionGlobal,'r-o',false,turnPoints);%443:443+3,462:462+3,491:491+3,495:495+3,526:526+3
-load hannover2_GrtM_z.mat
+
 routeDisplay(GrtM,'g-d',false,[48,55]);%(1:182)(1:532)799,490
 
 % obtainResult(clouds,MotionGlobal,true);
