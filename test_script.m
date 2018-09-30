@@ -1,13 +1,31 @@
 %% 真值处理
 load hannover_GrtM_z_ConvertNeed.mat
-for i=1:length(GrtM)
-    EulerIn=rotm2eul(GrtM{i}(1:3,1:3),'XYZ');
-    conEuler=[EulerIn(3),EulerIn(1),EulerIn(2)];
-    conRot=eul2rotm(conEuler,'XYZ');
-    conTran=[GrtM{i}(3,4);GrtM{i}(1,4);GrtM{i}(2,4)];
-    conGrtM{i}=Rt2M(conRot,conTran);
-% conGrtM{i}=(GrtM{1})\GrtM{i};
+load hannover2_result.mat
+load hannover2_MZ.mat
+
+nums=length(GrtM);
+GrtM_RelativeTo1=cell(nums,1);
+for i=1:nums
+    GrtM_RelativeTo1{i}=(GrtM{1}) \ GrtM{i};
 end
+
+for i=1:length(GrtM_RelativeTo1)
+    EulerIn{i}=rotm2eul(GrtM_RelativeTo1{i}(1:3,1:3),'ZYZ');
+%     EulerNeed{i}=rotm2eul(MotionGlobal{i}(1:3,1:3),'XYZ');
+    conEuler=[EulerIn{i}(3),EulerIn{i}(1),EulerIn{i}(2)];
+    conRot=eul2rotm(conEuler,'XYZ');
+    conTran=[GrtM_RelativeTo1{i}(3,4);GrtM_RelativeTo1{i}(1,4);GrtM_RelativeTo1{i}(2,4)];
+    conGrtM{i}=Rt2M(conRot,conTran);
+
+end
+
+%% 真值环境展示
+load hannover2_MZ.mat
+load hannover2_GrtM_z.mat
+routeDisplay(GrtM,'g-d',false,[48,55]);%(1:182)(1:532)799,490
+obtainResult(clouds,GrtM(1:100),true);
+
+
 %% 相对位置变化限制
 for i=2:length(relativeMotion)
     distance(i)=norm(  relativeMotion{i}(1:3,4));

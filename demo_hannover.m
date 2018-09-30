@@ -148,7 +148,7 @@ routeDisplay(MotionGlobal,'r-o',false,turnPoints);%443:443+3,462:462+3,491:491+3
 load hannover2_GrtM_z.mat
 routeDisplay(GrtM,'g-d',false,[48,55]);%(1:182)(1:532)799,490
 
-% obtainResult(clouds,MotionGlobal,true);
+obtainResult(clouds,MotionGlobal,true);
 
 
 
