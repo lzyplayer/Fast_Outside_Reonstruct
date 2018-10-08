@@ -1,23 +1,52 @@
+clc;clear;close all;
 %% 真值处理
 load hannover_GrtM_z_ConvertNeed.mat
+% load hannover2_GrtM_ori.mat
 load hannover2_result.mat
 load hannover2_MZ.mat
-
+% 重组为矩阵
+% for i=1:size(GrtM_ori,1)
+%     GrtM_ori_m{i}=reshape( GrtM_ori(i,:),4,4);
+% end
+% 
 nums=length(GrtM);
-GrtM_RelativeTo1=cell(nums,1);
 for i=1:nums
-    GrtM_RelativeTo1{i}=(GrtM{1}) \ GrtM{i};
+    GrtM{i}=(GrtM{1}) \ GrtM{i};
 end
+mirrorM=[1 0 0 0;
+         0 1 0 0;
+         0 -1 1 0;
+         0 0 0 1];
 
+% GrtM_RelativeTo1=cell(nums,1);
+GrtMatrixRightHand=cellfun(@(x) mirrorM*x,GrtM,'UniformOutput',0);
+
+% %%     new
+%     tfrom=MotionGlobal{47}*inv((GrtM_RelativeTo1{47}));
+%     rot=tfrom(1:3,1:3);
+for i=1:903
+%     newMotion{i}=[rot*GrtM_RelativeTo1{i}(1:3,1:3),MotionGlobal{i}(1:3,4);0 0 0 1];
+    GrtMatrixRightHand{i}(1:3,1:3)*GrtMatrixRightHand{i}(1:3,1:3)'
+end
+% obtain_model_hannover1(clouds,newMotion);
+%     
+%%
 for i=1:length(GrtM_RelativeTo1)
-    EulerIn{i}=rotm2eul(GrtM_RelativeTo1{i}(1:3,1:3),'ZYZ');
-%     EulerNeed{i}=rotm2eul(MotionGlobal{i}(1:3,1:3),'XYZ');
+    %% new
+    resu{i}=rotm2quat(GrtM_RelativeTo1{i}(1:3,1:3));
+    resu1{i}=rotm2quat(MotionGlobal{i}(1:3,1:3));
+%% old
+    EulerIn{i}=rotm2eul(GrtM_RelativeTo1{i}(1:3,1:3),'XYZ');
+    EulerIn2{i}=rotm2eul(GrtM_RelativeTo1{i}(1:3,1:3),'ZYX');
+    EulerNeed{i}=rotm2eul(MotionGlobal{i}(1:3,1:3),'XYZ');
     conEuler=[EulerIn{i}(3),EulerIn{i}(1),EulerIn{i}(2)];
     conRot=eul2rotm(conEuler,'XYZ');
     conTran=[GrtM_RelativeTo1{i}(3,4);GrtM_RelativeTo1{i}(1,4);GrtM_RelativeTo1{i}(2,4)];
     conGrtM{i}=Rt2M(conRot,conTran);
+     EulerIn{i}=rotm2eul(conGrtM{i}(1:3,1:3),'ZYZ');
 
 end
+% obtain_model_hannover1(clouds,newMotion);
 
 %% 真值环境展示
 load hannover2_MZ.mat

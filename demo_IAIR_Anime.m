@@ -5,6 +5,7 @@ addpath('./flann/');
 addpath('./estimateRigidTransform');
 icpGridStep = 0.3;
 eigDGridStep = 0.3287; %0.3287
+mergeGridStep=0.01;      %%test for now
 % filepath='./data/IAIR303/';
 % filePrefix='resultIAIR303_1.txt';
 
@@ -34,22 +35,25 @@ fullCloud=denoisedClouds{1};
 %% axes获取
 curFig=figure('Position',[7 76 1382 919]);
 reAxes=pcshow(fullCloud);
+axis(reAxes,[-6.5 2 -2.3 4 -0.75 1.3])
 title('Slam On IAIR303')
 % reAxes.CameraViewAngleMode = 'auto';
-% reAxes.CameraPosition=[-3037.32 -4448.29 -5802.49];
-% reAxes.CameraTarget=[-154.458 346.5108 -457.597];
-% reAxes.CameraUpVector=[0.35594 0.59201 -0.72306];
-% reAxes.CameraViewAngle=14.01893;
+reAxes.CameraPosition=[-2.868 -1.946 53.981];
+reAxes.CameraTarget=[-2.279 0.809 0.219];
+reAxes.CameraUpVector=[-0.217 -0.975 -0.053];
+reAxes.CameraViewAngle=8.64562;
 reScatter = reAxes.Children;
+
 
 routeFig=figure('Position',[1327.0 76 587.0 919]);
 routeAxes=axes();
+axis(routeAxes,[-4 1 -1 3 -0.5 0.5]);
 title('Slam Route On IAIR303')
-% 
-% routeAxes.CameraPosition=[165.05 572.619 -9765.724];
-% routeAxes.CameraTarget=[94.22 416.93 33.024];
-% routeAxes.CameraUpVector=[0.414 0.9100 0.0174];
-% routeAxes.CameraViewAngle=8.8671;
+% reAxes.CameraViewAngleMode = 'manual';
+routeAxes.CameraPosition=[-1.5 1 32.404];
+routeAxes.CameraTarget=[-1.5 1 0];
+routeAxes.CameraUpVector=[-1.542 -3.805 0];
+routeAxes.CameraViewAngle=10.771;
 
 %% 　主循环
 for i=2:N
@@ -64,11 +68,23 @@ for i=2:N
     %     if(MSE(i,1)>icpToler )  %单帧配准误差过大,
     %        downSampleCloud{i}=pcdownsample(clouds{1},'gridAverage',)
     [relativeMotion{i}, MSE(i,1)]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res);
-    disp(['cloud ' num2str(i-1) num2str(i) ' matched!']);
+    disp(['cloud ' num2str(i-1) '-' num2str(i) ' matched!']);
     %           fixedPointCloudN=[fixedPointCloudN ,i];
     %     end
     MotionGlobal{i}=MotionGlobal{i-1}*relativeMotion{i};
     globalCameraPosition(i,:)=MotionGlobal{i}(1:3,4)';
+    
+        %% anime
+    
+    fullCloud = pcmerge(fullCloud,pcZTransMulti(clouds{i},MotionGlobal{i}),mergeGridStep);
+    reScatter.XData=fullCloud.Location(:,1);
+    reScatter.YData=fullCloud.Location(:,2);
+    reScatter.ZData=fullCloud.Location(:,3);
+    reScatter.CData=fullCloud.Location(:,3);
+    drawnow()
+    
+    routeHandle=routeAnimePlugin(  MotionGlobal,'r-o',routeAxes);
+    
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
     if(size(globalCameraPosition,1)>LoopDectNum)
@@ -93,9 +109,9 @@ for i=2:N
     
 end
 generalTime=toc(generalTime)
-routeDisplay(MotionGlobal,'r-o',false,[]);
+% routeDisplay(MotionGlobal,'r-o',false,[]);
 
 
 % load IAIR303.mat
-obtainResult(clouds,MotionGlobal,false);
+% obtainResult(clouds,MotionGlobal,false);
 
