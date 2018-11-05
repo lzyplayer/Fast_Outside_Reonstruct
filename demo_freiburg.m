@@ -3,46 +3,55 @@ clc;clear;close all;
 
 addpath('./flann/');
 addpath('./estimateRigidTransform');
-eigDGridStep = 30;
+eigDGridStep = 3;
 % eigLoGridStep=0.03;
 
-readnum=942;
+
 % scannum=length(dir(datapath))-2;
 overlap = 0.45;
-icpToler= 10;
-ICPthreashold= 200;
-% %22回环检测阈值应当是变化量  0.345（差距）-12.05maxPairDistance=22;
-turnThreshold=0.3;
-loopMAmaxNum=18;
-turnLengthNum=6;
+icpToler= 0.01;
+ICPthreashold= 100;
+maxDis=6;           %成为回环匹配对的距离上限
+turnThreshold=0.35;
+loopMAmaxNum=18;    %回环修复匹配数量临界值
+turnLengthNum=5;    %转弯处理数
 MseHold=10;
-spacebetweenLoop=25;
+spacebetweenLoop=2;
 res= 1;
 s= 1;
-% clouds=readCloudCsv(filepath,filePrefix,readnum,0.6 ,s);
-load hannover2_MZ.mat
-load loopDiscCal_poly.mat
+mergeGridstep=0.03;
+load freiburg_rawWithSlamResult.mat
+rawClouds=clouds;
+clouds=pcTrim(clouds,inf,[0.4 ,inf],0.3);
+% pcshow(pcdownsample(clouds{1},'gridAverage',0.3))
+LoopDectNum=30;%形成回环至少相差LoopDectNum个序号  %floor(N/4);
+
 generalTime=tic;
 N = length(clouds);
 MotionGlobal{1}=eye(4);
 globalCameraPosition=[0,0,0];
 relativeMotion{1}=eye(4);
-LoopDectNum=45;%floor(N/4);
 cameraPosePair=[];
 turnHead=[];
 LoopFlag=0;
 turnFlag=0;
 lastLoopNum=1;   %回环检测阈值应当是变化量
 currLoop=0;
-maxDis=23; %临时[22,100,17,50,245,30]
+
 % fixedPointCloudN={};
 historyAccMotion={};
 historyCameraPosePair=[];
 %% 　主循环
-N=903;
+
 i=2;
 tic
 while i<=N
+    routeDisplay(MotionGlobal,'r-o',false,[]);
+    drawnow
+    if (i==6)
+        1==1;
+    end
+    
     disp(['processing frame ' num2str(i) '...']);
     Model=clouds{i-1}.Location';
     Data=clouds{i}.Location';
@@ -50,25 +59,25 @@ while i<=N
     t0=relativeMotion{i-1}(1:3,4);
     [MSE(i,1),R,t] = TrICP(Model, Data, R0, t0, ICPthreashold, overlap);
     relativeMotion{i}=Rt2M(R,t);
-    [isTurn , turn(i),planeErr(i)]=turnDectecion(relativeMotion{i},turnThreshold);
+    [isTurn , turn(i),~]=turnDectecion(relativeMotion{i},turnThreshold);
     
     if(isTurn && turnFlag==0 )
         turnFlag=turnLengthNum;
         disp(['turn head detected at cloud ' num2str(i)]);
         turnHead=[turnHead,i];
     else
-        if(turn(i)<0.11)        %back to straight
-            turnFlag=0;
-        end
+%         if(turn(i)<0.15)        %back to straight
+%             turnFlag=0;
+%         end
     end
-    if(MSE(i,1)>icpToler || turnFlag>0 || planeErr(i)>0.03 )   %单帧配准误差过大,
+    if(MSE(i,1)>icpToler || turnFlag>0 )   %单帧配准误差过大,
         [Motion, mse]=matchFix(clouds{i-1},clouds{i},overlap,eigDGridStep,res,i);
         if(~isempty(Motion))
             relativeMotion{i}=Motion;MSE(i,1)=mse;
         end
-        if(MSE(i,1)>30 || norm(relativeMotion{i}(1:3,4))>40)
-            relativeMotion{i}=relativeMotion{i-1};
-        end
+%         if(MSE(i,1)>30 || norm(relativeMotion{i}(1:3,4))>40)
+%             relativeMotion{i}=relativeMotion{i-1};
+%         end
         if(turnFlag>0)
             turnFlag=turnFlag-1;
         end
@@ -82,7 +91,7 @@ while i<=N
     %% 回环检测开始
     LoopPairNum=size(cameraPosePair,1);
     if(size(globalCameraPosition,1)>LoopDectNum && (i-lastLoopNum>spacebetweenLoop)) %防止两次修正太近
-        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag,lastLoopNum,loopDisCal,maxDis);
+        [cameraPosePair,LoopFlag]=estimateLoop(globalCameraPosition,cameraPosePair,LoopDectNum,LoopFlag,lastLoopNum,maxDis);
     end
     
     %% 回环结束_特征点匹配_匹配对扩展
@@ -91,15 +100,7 @@ while i<=N
         historyCameraPosePair=[historyCameraPosePair;[cameraPosePair,cameraPosePair(:,2)-lastLoopNum]];
         loopNumList(currLoop)=i;
         disp(['Loop ' num2str(currLoop)  ' detected completed, Motion Averaging starting...']);
-        if(max(cameraPosePair(:,1))>lastLoopNum+15)     %内环处理
-            disp(['Loop ' num2str(currLoop)  ' is inner Loop, storing Loop Motion...']);
-            storedMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigDGridStep,res,MseHold);
-            historyAccMotion=[historyAccMotion;storedMotion];
-            disp('Motion Stored!');
-            LoopFlag=0;
-            cameraPosePair=[];
-            continue;
-        end
+
         MotionGlobalBackup=MotionGlobal;
         save(['Loop' num2str(currLoop) 'BeforeMA'],'MotionGlobalBackup');
         accMotion=fastDesEigMatch(clouds,cameraPosePair,overlap,eigDGridStep,res,MseHold);
@@ -107,7 +108,7 @@ while i<=N
             LoopFlag=0;
             cameraPosePair=[];
             lastLoopNum=i;
-            disp('wrong loop detected!')
+            warning('wrong loop detected!')
             continue;
         end
         accMotion=[accMotion;historyAccMotion];
@@ -146,11 +147,11 @@ turnPoints=[];
 for tu=1:length(turnHead)
     turnPoints=[turnPoints,turnHead(tu)-1:turnHead(tu)+turnLengthNum-2];
 end
-routeDisplay(MotionGlobal,'r-o',false,turnPoints);%443:443+3,462:462+3,491:491+3,495:495+3,526:526+3
-load hannover2_GrtM_z.mat
-routeDisplay(GrtM,'g-d',false,[48,55]);%(1:182)(1:532)799,490
+routeDisplay(MotionGlobal,'r-o',false,[]);%443:443+3,462:462+3,491:491+3,495:495+3,526:526+3
 
-obtainResult(clouds,MotionGlobal,true,0.001);
+routeDisplay(gslamResult,'g-d',false,[]);%
+
+obtainResult(clouds,MotionGlobal,true,mergeGridstep);
 
 
 

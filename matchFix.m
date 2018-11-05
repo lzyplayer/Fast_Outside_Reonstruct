@@ -44,10 +44,9 @@ Model= ModelCloud.Location(1:res:end,:)';
 Data= DataCloud.Location(1:res:end,:)';
 %
 [MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap);
-if(MSE>500)
+if(MSE>0.1)
     Motion=[];
     warning(['cannot match cloud ' num2str(curr) ' with prev']);
-    return;
 end
 Motion=Rt2M(R,t);
 % Motion=Rt2M(R0,t0);

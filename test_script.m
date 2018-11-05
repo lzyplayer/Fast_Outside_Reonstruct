@@ -76,11 +76,11 @@ pcshow(pctransform(clouds{tosee},affine3d(relativeMotion{tosee}')));%historyAccM
 % end
 %% 分别展示2帧
 figure;
-a=517;
+a=6;
 pcshow(pctransform( clouds{a},affine3d(MotionGlobal{a}')));
 hold on;
 % figure;
-b=518;
+b=7;
 pcshow(pctransform( clouds{b},affine3d(MotionGlobal{b}')));
 
 % pc自带ICp算法
@@ -148,27 +148,31 @@ axis([-0.2 0.2 -0.2 0.2 -0.2 0.2 ]);
 
 %% 某两帧eig匹配
 s=1;
-% ModelCloud=clouds{1};
-% DataCloud=clouds{2};
-ModelCloud=pointCloud(pointCMap1.Location);%clouds{234}
-DataCloud=pointCloud(pointCMap2.Location);%clouds{687}
-gridStep= 6.9841;%30
+ModelCloud=clouds{6};
+DataCloud=clouds{7};
+% ModelCloud=pointCloud(pointCMap1.Location);%clouds{234}
+% DataCloud=pointCloud(pointCMap2.Location);%clouds{687}
+gridStep= 6;%30
 overlap=0.4;
 res=1;
+tic
 [tarDesp,tarSeed,tarNorm] = extractEig(ModelCloud,gridStep); 
 [srcDesp,srcSeed,srcNorm] = extractEig(DataCloud,gridStep);
-T = eigMatch(tarDesp,srcDesp,tarSeed,srcSeed,tarNorm,srcNorm,overlap,gridStep,0.3);
+T = eigMatch(tarDesp,srcDesp,tarSeed,srcSeed,tarNorm,srcNorm,overlap,gridStep);
 T = inv(T);
 R0= T(1:3,1:3);
 t0= T(1:3,4);
 Model= ModelCloud.Location(1:res:end,:)';
 Data= DataCloud.Location(1:res:end,:)';
-tic
+
 [MSE,R,t] = TrICP(Model, Data, R0, t0, 100, overlap);
 Motion=Rt2M(R,t);
 Motion(1:3,4)=Motion(1:3,4).*s;
 toc
+pcshow(ModelCloud);hold on
+pcshow(pcZTransMulti(DataCloud,Motion));
 
+return
 % 
 %展示某帧和第一帧配准
 close all;
@@ -195,8 +199,8 @@ cell2mat(fixMotion)
 [historyAccMotion;fixMotion{1}]
 
 %% 求两点距离
-p1=[-1.262 0.6227]
-p2=[0,0]
+p1=[86.53 -21.02]
+p2=[80.86 -20.12]
 norm(p2-p1)
 
 %% 点间关系拟合

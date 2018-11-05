@@ -1,3 +1,25 @@
+
+
+%% .dat , .pose类型点云读取
+filePath='./data/freiburgCampus/';
+scanNum=77;
+for i=1:scanNum
+    if(i>9)
+        currNum=['0' int2str(i)];
+    else
+        currNum=['00' int2str(i)];
+    end
+    currDat=importdata([filePath 'scan_' currNum '_points.dat']);
+    currPDat=importdata([filePath 'scan_' currNum '_robotPoses.dat']);
+    clouds{i}=pointCloud(currDat(:,4:6));
+    rtMat=eul2tform(currPDat(2,4:6),'XYZ');
+    rtMat(1:3,4)=currPDat(2,1:3)';
+    gslamResult{i}=rtMat;
+%     scan_001_robotPoses.dat
+end
+obtainResult(clouds,gslamResult,true,0.03);
+routeDisplay(gslamResult,'-or',true,[]);
+
 %% velodye 数据读取
 filePath='./data/IAIR303/ourSide/resultIAIR303_';
 scannum=13;

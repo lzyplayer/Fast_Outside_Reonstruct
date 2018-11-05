@@ -2,7 +2,11 @@ function [resultPC] = pcZTransMulti(cloud,currMotion)
 %PCTRANSMULTI 此处显示有关此函数的摘要
 %   此处显示详细说明
     Euler=rotm2eul(currMotion(1:3,1:3),'XYZ');
-    zEuler=[0 , 0, Euler(3)];
+    %分歧1
+%     zEuler=[0 , 0, Euler(3)];
+    %分歧2
+    zEuler=Euler;
+    
     conRot=eul2rotm( zEuler,'XYZ');
     conTran=[currMotion(1:2,4);0];
     currMotion=Rt2M(conRot,conTran);

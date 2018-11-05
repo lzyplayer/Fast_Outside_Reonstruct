@@ -100,6 +100,6 @@ load outside_GRT;
 % end
 routeDisplay(GrtM,'g-s',false,[]);
 
-% obtainResultOri(clouds,GrtM,false);
-% obtainResultOri(clouds,MotionGlobal,false);
+% obtainResultOri(clouds,GrtM,false,0.001);
+% obtainResultOri(clouds,MotionGlobal,false,0.001);
 % ransac()
